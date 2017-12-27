@@ -1,0 +1,45 @@
+#!/bin/sh
+# AppParam="qmxn"
+# SDKMode="u8sdk"
+# ResVer="1"
+UploadTag="Upload"
+BuildAppTag="OnlyBuildApp"
+DevelopTag="true"
+DisTag="dis"
+root=$(pwd)
+#echo ${DevelopTag}
+#echo ${Develop}
+if [ "${DevelopTag}" = "${Develop}" ]; then
+    DisTag="dev"
+fi
+resRoot=${root}/workSpace
+tmpPath=${resRoot}/Publish/${AppParam}/${SDKMode}/${ResVer}
+outPutPath=${resRoot}/tools/${AppParam}_${DisTag}/release
+tmpAssets=${resRoot}/Assets/StreamingAssets
+appTmpPath=${resRoot}/Publish/${AppParam}/${SDKMode}/${AppParam}
+outTmpPath=${resRoot}/tools/${AppParam}_${DisTag}/${AppParam}
+#echo ${tmpPath}
+#echo ${outPutPath}
+#echo ${tmpAssets}
+#echo ${appTmpPath}
+if [ "${BuildMode}" = "${UploadTag}" ]; then
+    echo "not need clear"
+else
+    if [ -d "${resRoot}" ]; then
+        if [ -d "${appTmpPath}" ]; then
+            rm -rf $appTmpPath
+        fi
+        if [ -d "${tmpAssets}" ]; then
+            rm -rf $tmpAssets
+        fi
+        if [ -d "${outPutPath}" ]; then
+            rm -rf $outPutPath
+        fi
+        if [ -d "${tmpPath}" ]; then
+            rm -rf $tmpPath
+        fi
+        if [ -d "${outTmpPath}" ]; then
+            rm -rf $outTmpPath
+        fi
+    fi
+fi

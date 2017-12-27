@@ -1,0 +1,45 @@
+@echo off
+setlocal EnableDelayedExpansion
+::set AppParam=qmxn
+::set SDKMode=simulate
+::set ResVer=1
+::set BuildFrom=testing_4.7.2
+::set ClientVer=1
+set UploadTag="Upload"
+set BuildAppTag="OnlyBuildApp"
+set root=%CD%
+set resRoot=%root%\workSpace
+::ÁÙÊ±Ä¿Â¼
+set tmpPath=%resRoot%\Publish\%AppParam%\%SDKMode%\%ResVer%
+set outPutPath=%resRoot%\tools\output
+set outPutAssets=%resRoot%\tools\games\%AppParam%\res
+set tmpAssets=%resRoot%\Assets\StreamingAssets
+if not exist %resRoot% (
+    goto Finish
+)else (
+    goto Clear
+)
+:Clear
+if %BuildMode%==%UploadTag% (
+    goto Finish
+)else (
+    if exist %tmpPath% (
+        rd /s /Q %tmpPath%
+    )
+    if exist %outPutPath% (
+        rd /s /Q %outPutPath%
+    )
+    if exist %outPutAssets% (
+      rd /s /Q %outPutAssets%
+    )
+    if %BuildMode%==%BuildAppTag% (
+        goto Finish
+    )else (
+        if exist %tmpAssets% (
+            rd /s /Q %tmpAssets%
+        )
+    )
+)
+goto Finish
+:Finish
+::pause

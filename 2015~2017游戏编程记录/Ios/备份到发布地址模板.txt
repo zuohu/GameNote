@@ -1,0 +1,41 @@
+#!/bin/sh
+# AppParam="qmxn"
+# Develop="true"
+# SDKMode="u8sdk"
+# ResVer="1"
+DevelopTag="true"
+storePath="/Users/Guest/Publish"
+root=$(pwd)
+DisTag="dis"
+if [ "${DevelopTag}" = "${Develop}" ]; then
+    DisTag="dev"
+fi
+
+#app 路径
+resPath=${root}/workSpace
+appSrcPath=${resPath}/tools/${AppParam}_${DisTag}/release/
+patchSrcPath=${resPath}/Publish/${AppParam}/${SDKMode}/${ResVer}/Patch
+updateJsonPath=${resPath}/Publish/${AppParam}/${SDKMode}/update.json
+
+dstPath=${storePath}/${BuildFrom}_${DisTag}
+if [ ! -d "${dstPath}" ]; then
+    #创建目录
+    mkdir -p $dstPath
+fi
+dstDir=$(date +%Y_%m_%d_%H_%M_%S)
+realDstDir=${dstPath}/${dstDir}
+if [ ! -d "${realDstDir}" ]; then
+    mkdir -p ${realDstDir}
+fi
+
+if [ -d "${appSrcPath}" ]; then
+    cp -r ${appSrcPath} ${realDstDir}/app/
+fi
+
+if [ -d "${patchSrcPath}" ]; then
+    cp -r ${patchSrcPath}/ ${realDstDir}/patch/
+fi
+
+if [ -f "${updateJsonPath}" ]; then
+    cp ${updateJsonPath} ${realDstDir}/update.json
+fi

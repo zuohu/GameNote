@@ -1,0 +1,36 @@
+@echo off
+setlocal EnableDelayedExpansion
+set UploadTag=Upload
+set SDKTag=u8sdk
+if %SDKMode%==%SDKTag% (
+    if %BuildMode%==%UploadTag% (
+        goto End
+    )else (
+        goto build
+    )
+)else (
+    goto End
+)
+:build
+set root=%CD%
+set toolsRoot=%root%\workSpace\tools
+@set PATH=%toolsRoot%\tool\win;%PATH%
+set python=C:\Python27\python.exe
+set sourcePath=%root%\workSpace\Publish\%AppParam%\%SDKMode%
+::app 文件夹
+set file=%AppParam%_%ClientVer%_%BuildChannel%.apk
+::拷贝的app路径
+set sourceAppPath=%sourcePath%\%ResVer%\App\%file%
+set dstAppPath=%toolsRoot%\games\%AppParam%\u8.apk
+if exist %sourceAppPath% (
+    goto packer
+)else (
+    goto End
+)
+:packer
+copy /y  %sourceAppPath% %dstAppPath%
+cd %toolsRoot%
+%python% scripts\pack.py -r -s -t 1 -g 2 -c %channels% -vsc %versionCode% -vsn %versionName% -cv %ClientVer%
+
+goto End
+:End

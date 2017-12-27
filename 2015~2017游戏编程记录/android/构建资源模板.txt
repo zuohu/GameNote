@@ -1,0 +1,76 @@
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::svn安装时记得勾选命令行工具 要不这里svn 使用会报错
+::addby penghu
+::email 395841903@qq.com
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+@echo off
+setlocal EnableDelayedExpansion
+set UploadTag=Upload
+if %BuildMode%==%UploadTag% (
+    goto End
+)else (
+    goto Init
+)
+::初始化环境
+:Init
+::当前目录
+set root=%cd%
+set execmd="C:\Program Files\Unity_4.7.2f\Editor\Unity.exe"
+::打包的工作目录
+set resRoot=%root%\workSpace
+::lua 脚本目录
+set luaScriptRoot=%resRoot%\client\scripts
+::资源目录
+set assetRoot=%resRoot%\Assets
+::美术资源目录 容易冲突的重灾区
+set artRoot=%assetRoot%\XNRes
+::项目配置文件
+set projectSettingPath=%resRoot%\ProjectSettings
+::param 参数定义
+::svn 路径
+set url=https://3dproject_src:444/svn/XN/tags/6kw_beta/1.0.1/6kw_Android_Launcher
+::联运平台标识
+set platform=PC
+::svn 用户名
+set user=packer
+::svn 密码
+set pwd=vEUorF3tHGsDAue
+
+::判断目录是否存在
+if not exist %resRoot% ( goto checkout ) else (goto update )
+
+::检出段落
+:checkout
+md %resRoot%
+::检出资源
+svn co %url% %resRoot% --username %user% --password %pwd%
+goto finally
+
+::更新段落
+:update
+::回滚脚本目录
+svn revert -R %luaScriptRoot% --username %user% --password %pwd%
+::回滚美术资源目录
+svn revert -R %artRoot% --username %user% --password %pwd%
+::回滚项目配置
+svn revert -R %projectSettingPath% --username %user% --password %pwd%
+::清理脚本目录
+svn cleanup %luaScriptRoot% --remove-unversioned --remove-ignored --include-externals --username %user% --password %pwd%
+::清理资源
+svn cleanup %artRoot% --remove-unversioned --remove-ignored --include-externals --username %user% --password %pwd%
+::更新整个目录
+svn update %resRoot% --username %user% --password %pwd%
+
+goto finally
+
+::最后调用打包步骤
+:finally
+goto packer
+:packer
+::修复下UGUI丢失的问题这个看是否能处理??
+%execmd% -quit -batchmode -projectPath %resRoot% -executeMethod Packer.PackerTools.RepairUGUI
+::打包pc包
+%execmd% -quit -batchmode -projectPath %resRoot% -executeMethod Packer.PackerTools.PublishAndroidWithParam -AppParam %AppParam% -BuildFrom %BuildFrom% -BuildChannel %BuildChannel% -SDKMode %SDKMode% -BuildMode %BuildMode% -ResVer %ResVer% -ClientVer %ClientVer% -BuildPatch %BuildPatch% -Develop %Develop% -ForceBuild %ForceBuild%
+
+::结束标识
+:End

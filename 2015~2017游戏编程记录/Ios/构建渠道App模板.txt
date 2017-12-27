@@ -1,0 +1,31 @@
+#!/bin/sh
+#Develop="true"
+#channels="anfeng"
+#AppParam="qmxn"
+#SDKMode="u8sdk"
+
+UploadTag=Upload
+DevelopTag="true"
+SDKTag=u8sdk
+DisTag="dis"
+if [ "${DevelopTag}" = "${Develop}" ]; then
+    DisTag="dev"
+fi
+if [ "${SDKMode}" = "${SDKTag}" ]; then
+    if [ "${BuildMode}" = "${UploadTag}" ]; then
+        echo "not need build App"
+    else
+        root=$(pwd)
+        toolsRoot=${root}/workSpace/tools
+        sourcePath=${root}/workSpace/Publish/${AppParam}/${SDKMode}
+        file=${AppParam}
+        sourceAppPath=${sourcePath}/${file}
+        disAppPath=${toolsRoot}/${AppParam}_${DisTag}/${file}/
+        cp -r ${sourceAppPath} ${disAppPath}
+        sleep 1
+        cd ${toolsRoot}
+        if [ -d "${disAppPath}" ]; then
+        	${toolsRoot}/buildscript/build.py ${toolsRoot}/${AppParam}_${DisTag}/${file}/Unity-iPhone.xcodeproj/ ${toolsRoot}/${AppParam}_${DisTag}/ -c ${channels} -cv ${Version} -csv ${Build} -clv ${ClientVer}
+        fi  
+    fi
+fi

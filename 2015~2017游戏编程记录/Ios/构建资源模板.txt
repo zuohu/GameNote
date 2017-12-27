@@ -1,0 +1,65 @@
+#!/bin/sh
+UploadTag=Upload
+if [ "$BuildMode" = "$UploadTag" ]; then
+    echo "not need build"
+else
+    #
+    # 定义一个用于更新工程的sh 脚本
+    # addby penghu
+    # email 395841903@qq.com
+    #
+    # 192.168.1.11  3dproject_src
+    # 定义svn相关的信息
+    # 资源url
+    url='https://192.168.1.11:444/svn/XN/tags/6kw_beta/1.0.1/6kw_IOS_Launcher'
+    #svn 用户名
+    user=packer
+    #svn 密码
+    password=vEUorF3tHGsDAue
+    #定义执行程序路径
+    execmd='/Applications/Unity/Unity.app/Contents/MacOS/Unity'
+    # 定义路径变量
+    rootPath=$(pwd)
+    ##打包的工作目录
+    resRoot=${rootPath}/workSpace
+    ##lua 脚本目录
+    luaScriptRoot=${resRoot}/client/scripts
+    ##资源目录
+    assetRoot=${resRoot}/Assets
+    ##美术资源目录 容易冲突的重灾区
+    artRoot=${assetRoot}/XNRes/
+
+    if [ ! -d "${resRoot}" ];then
+        #创建目录
+        mkdir -p $resRoot
+        #检出资源
+        svn co $url $resRoot --username $user --password $password
+        sleep 1
+        #修正打包脚本的属性
+        chmod -R 777 ${resRoot}/tools/buildscript/build.py
+        sleep 1
+    else
+        #回滚脚本目录
+        svn revert -R $luaScriptRoot --username $user --password $password
+        sleep 1
+        #回滚美术资源目录
+        svn revert -R $artRoot --username $user --password $password
+        sleep 1
+        #清理脚本目录
+        svn cleanup $luaScriptRoot --remove-unversioned --remove-ignored --include-externals --username $user --password $password
+        sleep 1
+        #清理资源
+        svn cleanup $artRoot --remove-unversioned --remove-ignored --include-externals --username $user --password $password
+        sleep 1
+        #更新整个目录
+        svn update $resRoot --username $user --password $password
+        sleep 2
+        #修正打包脚本的属性
+        chmod -R 777 ${resRoot}/tools/buildscript/build.py
+        sleep 1
+fi
+    #修复下UGUI丢失的问题这个看是否能处理??
+    $execmd -quit -batchmode -projectPath $resRoot -executeMethod Packer.PackerTools.RepairUGUI
+    #打包
+    $execmd -quit -batchmode -projectPath $resRoot -executeMethod Packer.PackerTools.PublishIosWithParam -AppParam $AppParam -SDKMode $SDKMode -BuildFrom $BuildFrom -BuildMode $BuildMode -BuildChannel $BuildChannel -ResVer $ResVer -ClientVer $ClientVer -BuildPatch $BuildPatch -ForceBuild $ForceBuild -Develop false
+fi

@@ -1,0 +1,82 @@
+@echo off
+setlocal EnableDelayedExpansion
+::set AppParam=qmxn
+::set SDKMode=simulate
+::set ResVer=1
+::set BuildFrom=testing_4.7.2
+::set ClientVer=1
+::拷贝的根路径
+::set root="D:\workspace\cy\CYPack\publish"
+set SDKTag=u8sdk
+set BuildResTag=OnlyBuildRes
+if %BuildMode%==%BuildResTag% (
+    goto End
+)else (
+    goto copyPublish
+)
+:copyPublish
+set root=%CD%
+set sourcePath=%root%\workSpace\Publish\%AppParam%\%SDKMode%
+set updateFile=update.json
+::计算
+set year=%date:~0,4%
+set mouth=%date:~5,2%
+set day=%date:~8,2%
+set hour=%time:~0,2%
+set "hour=%hour: =%"
+set min=%time:~3,2%
+set sec=%time:~6,2%
+::拷贝的文件夹路径保证最新
+set dstFile=%year%-%mouth%-%day%-%hour%-%min%-%sec%
+::拷贝的app路径
+set file=%AppParam%_%ClientVer%_%BuildChannel%.apk
+::目标文件
+set dstAppfile=%AppParam%_%ClientVer%_%BuildChannel%.apk
+::拷贝的app路径
+set sourceAppPath=%sourcePath%\%ResVer%\App\%file%
+if %SDKMode%==%SDKTag% (
+    set sourceAppPath=%root%\workSpace\tools\output\%AppParam%
+)
+::靠谱的补丁包路径
+set sourcePatchPath=%sourcePath%\%ResVer%\Patch
+::拷贝的更新文件
+set sourceUpdateCfg=%sourcePath%\%updateFile%
+::访问共享文件
+set dstUrl=\\192.168.1.11\XNPublish2\Client
+net use %dstUrl% 1 /user:share
+::根路径
+set dstRootPat=%dstUrl%\%BuildFrom%
+::定义拷贝到的目标路径
+set dstPath=%dstRootPat%\%AppParam%
+::定义唯一的拷贝目标路径
+set realDstPath=%dstPath%\%dstFile%
+::定义唯一拷贝的app目录
+set realDstAppPath=%dstPath%\%dstFile%\app
+::定义唯一拷贝的path目录
+set realDstPatchPath=%dstPath%\%dstFile%\patch
+::创建目标路径
+if not exist %dstRootPat% ( md %dstRootPat% )
+if not exist %dstPath% ( md %dstPath% )
+::创建唯一的目标路径 
+if not exist %realDstPath% ( md %realDstPath% )
+::创建唯一拷贝的app目录
+if not exist %realDstAppPath% ( md %realDstAppPath% )
+::创建唯一拷贝的path目录
+if not exist %realDstPatchPath% ( md %realDstPatchPath% )
+::拷贝补丁包文件
+if exist %sourcePatchPath% (xcopy /y /s /e %sourcePatchPath% %realDstPatchPath%)
+::拷贝更新文件
+if exist %sourceUpdateCfg% (copy /y %sourceUpdateCfg% %realDstPath%\%updateFile%)
+if %SDKMode%==%SDKTag% (
+    goto DirXCopy
+)else (
+    goto AppCopy
+)
+:DirXCopy
+if exist %sourceAppPath% (xcopy /y /s /e  %sourceAppPath% %realDstAppPath%)
+goto End
+:AppCopy
+if exist %sourceAppPath% (copy /y  %sourceAppPath% %realDstAppPath%\%dstAppfile%)
+goto End
+:End
+::pause
